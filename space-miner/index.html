@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -242,6 +242,16 @@
       box-shadow: none;
       cursor: default;
     }
+    #version {
+      position: fixed;
+      right: 8px;
+      bottom: 6px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: rgba(154, 216, 224, 0.55);
+      pointer-events: none;
+      z-index: 1;
+    }
   </style>
 </head>
 <body>
@@ -260,6 +270,8 @@
     <div id="map-title">SECTOR MAP</div>
     <div id="sector-map"></div>
   </div>
+  <div id="version"></div>
+  <script>window.__VERSION__ = "v0.7.0 (d3670a6)";</script>
   <script src="game.min.js"></script>
 </body>
 </html>
