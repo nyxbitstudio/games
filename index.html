@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NYXBIT GAMES</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2305060f'/%3E%3Cpath d='M8 2 L13 12 L8 9.5 L3 12 Z' fill='%234df0ff'/%3E%3C/svg%3E">
+  <style>
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #05060f;
+      font-family: monospace;
+      color: #9ad8e0;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      padding: 48px 16px 64px;
+      box-sizing: border-box;
+    }
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      letter-spacing: 6px;
+      color: #4df0ff;
+      text-shadow: 0 0 14px #4df0ff;
+      text-align: center;
+    }
+    #tagline {
+      margin: 0;
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: #9ad8e0;
+      text-align: center;
+    }
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 280px));
+      justify-content: center;
+      gap: 20px;
+      width: 100%;
+      max-width: 960px;
+    }
+    .card {
+      --accent: #4df0ff;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 20px;
+      border: 1.5px solid var(--accent);
+      box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 35%, transparent);
+      text-align: left;
+    }
+    .card-title {
+      font-size: 18px;
+      letter-spacing: 3px;
+      color: var(--accent);
+      text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent);
+    }
+    .card-tagline {
+      font-size: 12px;
+      letter-spacing: 1px;
+      color: #9ad8e0;
+      min-height: 3em;
+    }
+    .card a {
+      align-self: flex-start;
+      font-size: 14px;
+      letter-spacing: 3px;
+      padding: 8px 20px;
+      color: #7dffb0;
+      text-decoration: none;
+      border: 1.5px solid #7dffb0;
+      box-shadow: 0 0 10px rgba(125, 255, 176, 0.35);
+    }
+    .card a:hover {
+      background: rgba(125, 255, 176, 0.15);
+    }
+    .fallback {
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: #ffe14d;
+      text-shadow: 0 0 8px rgba(255, 225, 77, 0.4);
+      text-align: center;
+      grid-column: 1 / -1;
+    }
+    footer {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: rgba(154, 216, 224, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <h1>NYXBIT GAMES</h1>
+  <p id="tagline">A BAG OF GAMES. PICK ONE.</p>
+  <div id="grid">
+    <p class="fallback">GAME LIST FAILED TO LOAD — TRY REFRESHING.</p>
+    <noscript><p class="fallback">JAVASCRIPT IS REQUIRED TO LIST (AND PLAY) THE GAMES.</p></noscript>
+  </div>
+  <footer>NYXBIT STUDIO</footer>
+  <script src="games.js"></script>
+  <script>
+    const GAMES = window.GAMES;
+    const grid = document.getElementById("grid");
+
+    if (GAMES) {
+      grid.textContent = "";
+    }
+
+    if (GAMES && GAMES.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "fallback";
+      empty.textContent = "NO GAMES YET — CHECK BACK SOON.";
+      grid.append(empty);
+    }
+
+    for (const game of GAMES || []) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.style.setProperty("--accent", game.accent);
+
+      const title = document.createElement("div");
+      title.className = "card-title";
+      title.textContent = game.title;
+
+      const tagline = document.createElement("div");
+      tagline.className = "card-tagline";
+      tagline.textContent = game.tagline;
+
+      const play = document.createElement("a");
+      // file:// shows a directory listing for "<id>/", so link the file directly there
+      const suffix = location.protocol === "file:" ? "index.html" : "";
+      play.href = "./" + game.id + "/" + suffix;
+      play.textContent = "PLAY";
+
+      card.append(title, tagline, play);
+      grid.append(card);
+    }
+  </script>
+</body>
+</html>

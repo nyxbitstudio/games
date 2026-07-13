@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Space Mining Incremental</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #05060f;
+      font-family: monospace;
+    }
+    #game {
+      display: block;
+      cursor: crosshair;
+    }
+    #station {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: rgba(5, 6, 15, 0.85);
+      color: #4df0ff;
+      text-align: center;
+      overflow-y: auto;
+    }
+    #station[hidden] {
+      display: none;
+    }
+    #station h1 {
+      font-size: 28px;
+      letter-spacing: 4px;
+      text-shadow: 0 0 12px #4df0ff;
+      margin: 0;
+    }
+    #station p {
+      color: #9ad8e0;
+      max-width: 44ch;
+      margin: 0;
+    }
+    #station-haul {
+      color: #ffe14d;
+      letter-spacing: 2px;
+      text-shadow: 0 0 8px rgba(255, 225, 77, 0.5);
+    }
+    #station-haul[hidden] {
+      display: none;
+    }
+    #station-cash {
+      font-size: 22px;
+      letter-spacing: 3px;
+      color: #7dffb0;
+      text-shadow: 0 0 12px rgba(125, 255, 176, 0.5);
+    }
+    /* Each refined unit makes the Cash readout tick visibly upward. */
+    #station-cash.tick {
+      animation: cash-tick 0.4s ease-out;
+    }
+    @keyframes cash-tick {
+      from {
+        transform: scale(1.14);
+        text-shadow: 0 0 24px rgba(125, 255, 176, 0.95);
+      }
+      to {
+        transform: scale(1);
+        text-shadow: 0 0 12px rgba(125, 255, 176, 0.5);
+      }
+    }
+    #refinery {
+      width: 340px;
+      max-width: 80vw;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    #refinery-queue {
+      font-size: 13px;
+      letter-spacing: 2px;
+      color: #9ad8e0;
+    }
+    #refinery-track {
+      height: 12px;
+      border: 1.5px solid #4df0ff;
+      box-shadow: 0 0 10px rgba(77, 240, 255, 0.4);
+    }
+    #refinery-progress {
+      height: 100%;
+      width: 0%;
+      background: rgba(77, 240, 255, 0.45);
+    }
+    #tree-title {
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: #4df0ff;
+      text-shadow: 0 0 8px rgba(77, 240, 255, 0.5);
+      margin-top: 8px;
+    }
+    #upgrade-tree {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      max-width: 92vw;
+    }
+    .tree-branch {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 158px;
+    }
+    .tree-branch-title {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: #9ad8e0;
+    }
+    .tree-node {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px;
+      border: 1.5px solid rgba(77, 240, 255, 0.5);
+      box-shadow: 0 0 8px rgba(77, 240, 255, 0.2);
+      text-align: left;
+    }
+    .tree-node[hidden] {
+      display: none;
+    }
+    .tree-node-unlock {
+      border: 1.5px solid rgba(255, 225, 77, 0.6);
+      box-shadow: 0 0 8px rgba(255, 225, 77, 0.25);
+    }
+    .tree-node-unlock .tree-node-name {
+      color: #ffe14d;
+    }
+    .tree-node-name {
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: #4df0ff;
+    }
+    .tree-node-level {
+      float: right;
+      color: #ffe14d;
+    }
+    .tree-node-effect {
+      font-size: 11px;
+      color: #9ad8e0;
+    }
+    .tree-node button {
+      font-family: monospace;
+      font-size: 12px;
+      letter-spacing: 1px;
+      padding: 4px 8px;
+      color: #7dffb0;
+      background: transparent;
+      border: 1px solid #7dffb0;
+      cursor: pointer;
+    }
+    .tree-node button:hover:enabled {
+      background: rgba(125, 255, 176, 0.15);
+    }
+    .tree-node button:disabled {
+      color: rgba(125, 255, 176, 0.35);
+      border-color: rgba(125, 255, 176, 0.25);
+      cursor: default;
+    }
+    #map-title {
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: #4df0ff;
+      text-shadow: 0 0 8px rgba(77, 240, 255, 0.5);
+      margin-top: 8px;
+    }
+    #sector-map {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      max-width: 92vw;
+    }
+    .sector-card {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 12px;
+      width: 200px;
+      border: 1.5px solid rgba(77, 240, 255, 0.5);
+      box-shadow: 0 0 10px rgba(77, 240, 255, 0.25);
+      text-align: left;
+    }
+    .sector-card.locked {
+      border-color: rgba(154, 216, 224, 0.35);
+      box-shadow: none;
+    }
+    .sector-name {
+      font-size: 14px;
+      letter-spacing: 2px;
+      color: #4df0ff;
+    }
+    .sector-card.locked .sector-name {
+      color: #9ad8e0;
+    }
+    .sector-lock {
+      float: right;
+      font-size: 11px;
+      color: #ffe14d;
+    }
+    .sector-detail {
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: #9ad8e0;
+    }
+    .sector-card button {
+      font-family: monospace;
+      font-size: 14px;
+      letter-spacing: 2px;
+      padding: 8px 16px;
+      color: #4df0ff;
+      background: transparent;
+      border: 1.5px solid #4df0ff;
+      box-shadow: 0 0 12px rgba(77, 240, 255, 0.5);
+      cursor: pointer;
+    }
+    .sector-card button:hover:enabled {
+      background: rgba(77, 240, 255, 0.15);
+    }
+    .sector-card.locked button {
+      color: #ffe14d;
+      border-color: rgba(255, 225, 77, 0.6);
+      box-shadow: 0 0 8px rgba(255, 225, 77, 0.25);
+    }
+    .sector-card.locked button:hover:enabled {
+      background: rgba(255, 225, 77, 0.12);
+    }
+    .sector-card.locked button:disabled {
+      color: rgba(255, 225, 77, 0.35);
+      border-color: rgba(255, 225, 77, 0.25);
+      box-shadow: none;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="station">
+    <h1 id="station-title">STATION</h1>
+    <p id="station-reason"></p>
+    <p id="station-haul" hidden></p>
+    <div id="station-cash">CASH  0</div>
+    <div id="refinery">
+      <div id="refinery-queue">REFINERY IDLE</div>
+      <div id="refinery-track"><div id="refinery-progress"></div></div>
+    </div>
+    <div id="tree-title">UPGRADE TREE</div>
+    <div id="upgrade-tree"></div>
+    <div id="map-title">SECTOR MAP</div>
+    <div id="sector-map"></div>
+  </div>
+  <script src="game.min.js"></script>
+</body>
+</html>
